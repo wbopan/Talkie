@@ -54,6 +54,8 @@ actor AudioRecorder {
     private var fftRealBuffer: [Float] = []
     private var fftImagBuffer: [Float] = []
     private var fftMagnitudes: [Float] = []
+    // Accumulation buffer for small audio chunks (HAL path delivers < fftSize frames)
+    private var fftAccumBuffer: [Int16] = []
 
     /// Audio processing Task to prevent Task explosion
     private var processingTask: Task<Void, Never>?
@@ -104,6 +106,7 @@ actor AudioRecorder {
         fftRealBuffer = [Float](repeating: 0, count: halfSize)
         fftImagBuffer = [Float](repeating: 0, count: halfSize)
         fftMagnitudes = [Float](repeating: 0, count: halfSize)
+        fftAccumBuffer = []
 
         // Route to the appropriate capture backend
         if !selectedMicrophoneUID.isEmpty,
@@ -181,6 +184,7 @@ actor AudioRecorder {
         fftRealBuffer = []
         fftImagBuffer = []
         fftMagnitudes = []
+        fftAccumBuffer = []
 
         log(.info, "Audio recording stopped")
     }
@@ -494,7 +498,8 @@ actor AudioRecorder {
         ]
 
         // Dynamic range above noise floor for normalization
-        let dynamicRangeDB: Float = 18.0
+        // Compact range to make quiet speech visible
+        let dynamicRangeDB: Float = 10.0
 
         var levels = [Float](repeating: 0, count: bandCount)
         fftMagnitudes.withUnsafeBufferPointer { buf in
@@ -524,9 +529,11 @@ actor AudioRecorder {
                 }
 
                 // Normalize: only show energy above noise floor + margin
-                // 6dB margin absorbs normal ambient noise fluctuation
-                let aboveNoise = db - (noiseFloor[i] + 6.0)
-                levels[i] = max(0, min(1, aboveNoise / dynamicRangeDB))
+                // 3dB margin absorbs ambient noise while staying sensitive to quiet speech
+                let aboveNoise = db - (noiseFloor[i] + 3.0)
+                let linear = max(0, min(1, aboveNoise / dynamicRangeDB))
+                // Compressive curve: boost quiet levels, preserve loud levels
+                levels[i] = powf(linear, 0.5)
             }
         }
 
@@ -599,8 +606,25 @@ actor AudioRecorder {
 
         let frameLength = Int(convertedBuffer.frameLength)
 
+        // Accumulate samples for FFT (HAL path may deliver small buffers < fftSize)
+        let newSamples = UnsafeBufferPointer(start: channelData[0], count: frameLength)
+        fftAccumBuffer.append(contentsOf: newSamples)
+
         // Compute frequency bands via FFT for waveform visualization
-        let bands = computeFrequencyBands(channelData[0], frameCount: frameLength)
+        // Use the latest fftSize samples from the accumulation buffer
+        let bands: [Float]
+        if fftAccumBuffer.count >= fftSize {
+            let startIndex = fftAccumBuffer.count - fftSize
+            bands = fftAccumBuffer.withUnsafeMutableBufferPointer { buf in
+                computeFrequencyBands(buf.baseAddress! + startIndex, frameCount: fftSize)
+            }
+            // Keep only the latest fftSize samples to bound memory
+            if fftAccumBuffer.count > fftSize * 2 {
+                fftAccumBuffer.removeFirst(fftAccumBuffer.count - fftSize)
+            }
+        } else {
+            bands = [Float](repeating: 0, count: 5)
+        }
 
         if let levelCallback = audioLevelCallback {
             Task { @MainActor in
