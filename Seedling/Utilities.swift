@@ -629,6 +629,7 @@ enum LongPressModifierKey: String, Codable, CaseIterable {
     case control
     case shift
     case fn
+    case space
 
     // Side-specific variants
     case leftOption
@@ -655,6 +656,7 @@ enum LongPressModifierKey: String, Codable, CaseIterable {
         case .leftShift:    return "Left Shift"
         case .rightShift:   return "Right Shift"
         case .fn:           return "Fn"
+        case .space:        return "Space"
         }
     }
 
@@ -665,6 +667,7 @@ enum LongPressModifierKey: String, Codable, CaseIterable {
         case .control, .leftControl, .rightControl:    return "⌃"
         case .shift, .leftShift, .rightShift:          return "⇧"
         case .fn:                                      return "fn"
+        case .space:                                   return "␣"
         }
     }
 
@@ -676,6 +679,7 @@ enum LongPressModifierKey: String, Codable, CaseIterable {
         case .control, .leftControl, .rightControl:    return .control
         case .shift, .leftShift, .rightShift:          return .shift
         case .fn:                                      return .function
+        case .space:                                   return []  // Not a modifier key
         }
     }
 
@@ -697,13 +701,22 @@ enum LongPressModifierKey: String, Codable, CaseIterable {
         case .leftShift:    return [56]
         case .rightShift:   return [60]
         case .fn:           return [63]
+        case .space:        return [49]
+        }
+    }
+
+    /// Whether this key is a regular key (not a modifier) requiring keyDown/keyUp monitoring
+    var isRegularKey: Bool {
+        switch self {
+        case .space: return true
+        default:     return false
         }
     }
 
     /// Whether this variant is side-specific (left or right only)
     var isSideSpecific: Bool {
         switch self {
-        case .option, .command, .control, .shift, .fn:
+        case .option, .command, .control, .shift, .fn, .space:
             return false
         case .leftOption, .rightOption,
              .leftCommand, .rightCommand,
@@ -723,7 +736,7 @@ struct LongPressConfig: Codable, Equatable {
 
     static let `default` = LongPressConfig(
         enabled: true,
-        modifierKey: .shift,
+        modifierKey: .space,
         minimumPressDuration: 0.15,
         requireDoubleTap: false
     )

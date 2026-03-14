@@ -305,12 +305,16 @@ class ModifierKeyMonitor {
 
     private var globalEventMonitor: Any?
     private var localEventMonitor: Any?
+    private var eventTap: CFMachPort?
+    private var runLoopSource: CFRunLoopSource?
     private var state: State = .idle
     private var firstPressTime: Date?
     private var firstReleaseTime: Date?
     private var secondPressTime: Date?
     private var doubleTapTimeoutWorkItem: DispatchWorkItem?
     private var lastMatchedKeyCode: UInt16?
+    /// Buffered keyDown event to replay if space is released quickly (not PTT)
+    private var bufferedKeyDownEvent: CGEvent?
 
     private let logger = Logger.hotkey
 
@@ -335,17 +339,24 @@ class ModifierKeyMonitor {
 
         logger.info("Starting modifier key monitor for \(self.modifierKey.displayName) (requireDoubleTap: \(self.requireDoubleTap))")
 
+        if modifierKey.isRegularKey {
+            startRegularKeyMonitor()
+        } else {
+            startModifierKeyMonitor()
+        }
+    }
+
+    /// Start monitors for modifier keys (flagsChanged events)
+    private func startModifierKeyMonitor() {
         // Global monitor - captures events sent to OTHER applications
         globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handleFlagsChanged(event, source: "global")
         }
 
         // Local monitor - captures events sent to OUR application
-        // This is crucial because when our window is shown and focused,
-        // global monitor won't receive the key release event
         localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             self?.handleFlagsChanged(event, source: "local")
-            return event // Pass the event through
+            return event
         }
 
         if globalEventMonitor == nil {
@@ -354,6 +365,176 @@ class ModifierKeyMonitor {
         if localEventMonitor == nil {
             logger.error("Failed to create local event monitor")
         }
+    }
+
+    /// Start CGEventTap for regular keys (space) — intercepts and can suppress key events
+    private func startRegularKeyMonitor() {
+        let targetKeyCode = modifierKey.keyCodes.first!
+
+        // Store self as unmanaged pointer for the C callback
+        let refcon = Unmanaged.passUnretained(self).toOpaque()
+
+        guard let tap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue) | CGEventMask(1 << CGEventType.keyUp.rawValue),
+            callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
+                guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
+                let monitor = Unmanaged<ModifierKeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
+                return monitor.handleCGEvent(proxy: proxy, type: type, event: event)
+            },
+            userInfo: refcon
+        ) else {
+            logger.error("Failed to create CGEventTap - check Accessibility permission")
+            return
+        }
+
+        self.eventTap = tap
+        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        self.runLoopSource = source
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+        CGEvent.tapEnable(tap: tap, enable: true)
+
+        logger.info("CGEventTap started for keyCode \(targetKeyCode)")
+    }
+
+    /// Handle intercepted CGEvent for regular key PTT (returns nil to suppress, event to pass through)
+    private func handleCGEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        // Re-enable tap if it gets disabled by the system
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let tap = eventTap {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
+        let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+        let isAutoRepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
+        guard modifierKey.keyCodes.contains(keyCode) else {
+            return Unmanaged.passUnretained(event)
+        }
+
+        // Ignore auto-repeat keyDown events
+        if type == .keyDown && isAutoRepeat {
+            // If activated, suppress repeats; otherwise pass through
+            return state == .activated ? nil : Unmanaged.passUnretained(event)
+        }
+
+        if type == .keyDown {
+            handleRegularKeyPress(keyCode: keyCode, event: event)
+            // Buffer the event — don't pass through yet
+            // If released quickly, we'll replay it
+            return nil
+        } else if type == .keyUp {
+            let shouldSuppress = handleRegularKeyRelease(keyCode: keyCode)
+            return shouldSuppress ? nil : Unmanaged.passUnretained(event)
+        }
+
+        return Unmanaged.passUnretained(event)
+    }
+
+    /// Handle regular key press (keyDown)
+    private func handleRegularKeyPress(keyCode: UInt16, event: CGEvent) {
+        logger.debug("Regular key press: keyCode=\(keyCode), state=\(self.state.description)")
+
+        switch state {
+        case .idle:
+            lastMatchedKeyCode = keyCode
+            bufferedKeyDownEvent = event.copy()
+            if requireDoubleTap {
+                state = .firstPressDown
+                firstPressTime = Date()
+            } else {
+                state = .secondPressHeld
+                secondPressTime = Date()
+                DispatchQueue.main.asyncAfter(deadline: .now() + minimumDuration) { [weak self] in
+                    self?.checkActivation()
+                }
+            }
+
+        case .waitingForSecondPress:
+            lastMatchedKeyCode = keyCode
+            bufferedKeyDownEvent = event.copy()
+            guard let releaseTime = firstReleaseTime else {
+                resetState()
+                return
+            }
+            let timeSinceRelease = Date().timeIntervalSince(releaseTime)
+            if timeSinceRelease <= doubleTapInterval {
+                state = .secondPressHeld
+                secondPressTime = Date()
+                doubleTapTimeoutWorkItem?.cancel()
+                doubleTapTimeoutWorkItem = nil
+                DispatchQueue.main.asyncAfter(deadline: .now() + minimumDuration) { [weak self] in
+                    self?.checkActivation()
+                }
+            } else {
+                resetState()
+                lastMatchedKeyCode = keyCode
+                bufferedKeyDownEvent = event.copy()
+                state = .firstPressDown
+                firstPressTime = Date()
+            }
+
+        default:
+            break
+        }
+    }
+
+    /// Handle regular key release (keyUp). Returns true if the keyUp should be suppressed.
+    private func handleRegularKeyRelease(keyCode: UInt16) -> Bool {
+        logger.debug("Regular key release: keyCode=\(keyCode), state=\(self.state.description)")
+
+        switch state {
+        case .firstPressDown:
+            guard let pressTime = firstPressTime else {
+                replayBufferedKeyDown()
+                resetState()
+                return false
+            }
+            let pressDuration = Date().timeIntervalSince(pressTime)
+            if pressDuration <= firstTapMaxDuration {
+                state = .waitingForSecondPress
+                firstReleaseTime = Date()
+                let workItem = DispatchWorkItem { [weak self] in
+                    guard let self = self, self.state == .waitingForSecondPress else { return }
+                    self.logger.debug("Double-tap timeout, replaying buffered key and resetting")
+                    self.replayBufferedKeyDown()
+                    self.resetState()
+                }
+                doubleTapTimeoutWorkItem = workItem
+                DispatchQueue.main.asyncAfter(deadline: .now() + doubleTapInterval, execute: workItem)
+            } else {
+                replayBufferedKeyDown()
+                resetState()
+            }
+            return false  // Let keyUp through (or it was already suppressed with keyDown)
+
+        case .secondPressHeld:
+            // Released before activation
+            replayBufferedKeyDown()
+            resetState()
+            return false
+
+        case .activated:
+            // PTT release
+            logger.info("Push to Talk (space) release detected, triggering callback")
+            onRelease()
+            bufferedKeyDownEvent = nil
+            resetState()
+            return true  // Suppress the keyUp too
+
+        default:
+            return false
+        }
+    }
+
+    /// Replay the buffered keyDown event so the character appears in the focused app
+    private func replayBufferedKeyDown() {
+        guard let event = bufferedKeyDownEvent else { return }
+        event.post(tap: .cgAnnotatedSessionEventTap)
+        bufferedKeyDownEvent = nil
     }
 
     func stop() {
@@ -365,8 +546,17 @@ class ModifierKeyMonitor {
             NSEvent.removeMonitor(monitor)
             localEventMonitor = nil
         }
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            eventTap = nil
+        }
+        if let source = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, .commonModes)
+            runLoopSource = nil
+        }
         doubleTapTimeoutWorkItem?.cancel()
         doubleTapTimeoutWorkItem = nil
+        bufferedKeyDownEvent = nil
         logger.info("Modifier key monitor stopped")
         resetState()
     }
@@ -528,17 +718,21 @@ class ModifierKeyMonitor {
             return
         }
 
-        // Check if modifier is still pressed
-        let currentFlags = NSEvent.modifierFlags
-        guard currentFlags.contains(modifierKey.modifierFlag) else {
-            logger.debug("Modifier released before activation")
-            resetState()
-            return
+        // For regular keys (space), we can't check modifier flags — trust the state machine
+        // (if keyUp had arrived, state would have already been reset)
+        if !modifierKey.isRegularKey {
+            let currentFlags = NSEvent.modifierFlags
+            guard currentFlags.contains(modifierKey.modifierFlag) else {
+                logger.debug("Modifier released before activation")
+                resetState()
+                return
+            }
         }
 
-        // Activate
+        // Activate — discard buffered keyDown so space isn't typed
         logger.info("Push to Talk hold threshold reached, activating")
         state = .activated
+        bufferedKeyDownEvent = nil
         onActivate()
     }
 
