@@ -736,7 +736,7 @@ struct LongPressConfig: Codable, Equatable {
 
     static let `default` = LongPressConfig(
         enabled: true,
-        modifierKey: .space,
+        modifierKey: .rightShift,
         minimumPressDuration: 0.15,
         requireDoubleTap: false
     )

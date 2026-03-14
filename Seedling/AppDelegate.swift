@@ -415,6 +415,12 @@ class ModifierKeyMonitor {
             return Unmanaged.passUnretained(event)
         }
 
+        // Pass through if any modifier keys are held (e.g. Cmd+Space, Ctrl+Space)
+        let flags = CGEventFlags(rawValue: event.flags.rawValue & (CGEventFlags.maskCommand.rawValue | CGEventFlags.maskAlternate.rawValue | CGEventFlags.maskControl.rawValue | CGEventFlags.maskShift.rawValue))
+        if flags.rawValue != 0 {
+            return Unmanaged.passUnretained(event)
+        }
+
         // Ignore auto-repeat keyDown events
         if type == .keyDown && isAutoRepeat {
             // If activated, suppress repeats; otherwise pass through
