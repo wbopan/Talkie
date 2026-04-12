@@ -574,7 +574,9 @@ struct FloatingTranscriptionView: View {
             startTypewriter()
         }
         .onChange(of: displayedText) {
-            adjustWindowSize()
+            DispatchQueue.main.async {
+                adjustWindowSize()
+            }
         }
     }
 
@@ -644,8 +646,14 @@ struct FloatingTranscriptionView: View {
 
     // MARK: - Window Size
 
+    @State private var isAdjustingSize = false
+
     private func adjustWindowSize() {
+        guard !isAdjustingSize else { return }
         guard let window = NSApp.windows.first(where: { $0 is FloatingWindow }) else { return }
+
+        isAdjustingSize = true
+        defer { isAdjustingSize = false }
 
         let text = displayedText
 
@@ -665,7 +673,7 @@ struct FloatingTranscriptionView: View {
                 y: currentFrame.origin.y,
                 width: circleSize,
                 height: circleSize
-            ), display: true)
+            ), display: false)
             return
         }
 
@@ -694,16 +702,16 @@ struct FloatingTranscriptionView: View {
             ? currentFrame.midX - finalWidth / 2
             : currentFrame.origin.x
 
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.15
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            window.animator().setFrame(NSRect(
-                x: newX,
-                y: currentFrame.origin.y,
-                width: finalWidth,
-                height: capsuleHeight
-            ), display: true)
-        }
+        let newFrame = NSRect(
+            x: newX,
+            y: currentFrame.origin.y,
+            width: finalWidth,
+            height: capsuleHeight
+        )
+
+        // Use NSWindow's built-in animate to avoid re-entrant display cycle issues
+        // with NSAnimationContext + window.animator().setFrame(display: true)
+        window.setFrame(newFrame, display: false, animate: true)
     }
 
     private func findController() -> FloatingWindowController? {
