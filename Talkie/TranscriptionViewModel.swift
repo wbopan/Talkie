@@ -1,6 +1,6 @@
 //
 //  TranscriptionViewModel.swift
-//  Seedling
+//  Talkie
 //
 //  View model coordinating recording and transcription
 //

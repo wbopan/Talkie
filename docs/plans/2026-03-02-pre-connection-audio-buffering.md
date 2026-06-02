@@ -13,7 +13,7 @@
 ### Task 1: Add buffer properties to TranscriptionViewModel
 
 **Files:**
-- Modify: `Seedling/TranscriptionViewModel.swift:44-45`
+- Modify: `Talkie/TranscriptionViewModel.swift:44-45`
 
 **Step 1: Add properties after `audioActuallyStarted`**
 
@@ -36,7 +36,7 @@ Expected: Build succeeds
 ### Task 2: Modify sendAudioToASR to support buffering
 
 **Files:**
-- Modify: `Seedling/TranscriptionViewModel.swift` — method `sendAudioToASR()` (line ~462)
+- Modify: `Talkie/TranscriptionViewModel.swift` — method `sendAudioToASR()` (line ~462)
 
 **Step 1: Replace `sendAudioToASR` with buffering version**
 
@@ -95,7 +95,7 @@ Expected: Build succeeds
 ### Task 3: Add flushAudioBuffer method
 
 **Files:**
-- Modify: `Seedling/TranscriptionViewModel.swift` — add new method near `sendAudioToASR`
+- Modify: `Talkie/TranscriptionViewModel.swift` — add new method near `sendAudioToASR`
 
 **Step 1: Add flushAudioBuffer after sendAudioToASR**
 
@@ -136,7 +136,7 @@ Expected: Build succeeds
 ### Task 4: Restructure startRecording to run audio and connection concurrently
 
 **Files:**
-- Modify: `Seedling/TranscriptionViewModel.swift` — method `startRecording()` (line ~155)
+- Modify: `Talkie/TranscriptionViewModel.swift` — method `startRecording()` (line ~155)
 
 **Step 1: Modify the async task body inside startRecording**
 
@@ -212,7 +212,7 @@ Expected: Build succeeds
 ### Task 5: Clean up buffer state on stop and error paths
 
 **Files:**
-- Modify: `Seedling/TranscriptionViewModel.swift`
+- Modify: `Talkie/TranscriptionViewModel.swift`
 
 **Step 1: Reset buffer in stopRecording's stopTask closure**
 

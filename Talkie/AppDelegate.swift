@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Seedling
+//  Talkie
 //
 //  Core app coordinator for menu bar app with global hotkey
 //
@@ -72,7 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        log(.info, "Seedling menu bar app launched")
+        log(.info, "Talkie menu bar app launched")
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -98,7 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Create menu
         let menu = NSMenu()
 
-        let openItem = NSMenuItem(title: "Open Seedling", action: #selector(showWindow), keyEquivalent: "")
+        let openItem = NSMenuItem(title: "Open Talkie", action: #selector(showWindow), keyEquivalent: "")
         openItem.image = NSImage(systemSymbolName: "mic", accessibilityDescription: nil)
         menu.addItem(openItem)
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))

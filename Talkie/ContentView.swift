@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Seedling
+//  Talkie
 //
 //  Main UI for voice transcription
 //
@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Header
-            Text("Seedling")
+            Text("Talkie")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 

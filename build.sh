@@ -2,14 +2,14 @@
 
 set -eo pipefail
 
-echo "🔨 Building Seedling..."
+echo "🔨 Building Talkie..."
 
 BUILD_LOG=$(mktemp)
 trap "rm -f $BUILD_LOG" EXIT
 
 # Build and capture raw output, pipe through xcbeautify for display
-xcodebuild -project Seedling.xcodeproj \
-    -scheme Seedling \
+xcodebuild -project Talkie.xcodeproj \
+    -scheme Talkie \
     -configuration Debug \
     -derivedDataPath ./build \
     ENABLE_USER_SCRIPT_SANDBOXING=NO \
@@ -18,7 +18,7 @@ xcodebuild -project Seedling.xcodeproj \
 # If codesign failed due to extended attributes, clear them and re-sign manually
 if grep -q "resource fork, Finder information, or similar detritus not allowed" "$BUILD_LOG"; then
     echo "⚠️  Clearing extended attributes and re-signing..."
-    APP_PATH="./build/Build/Products/Debug/Seedling.app"
+    APP_PATH="./build/Build/Products/Debug/Talkie.app"
     xattr -cr "$APP_PATH" 2>/dev/null || true
     # Extract signing identity and entitlements from the failed codesign command
     SIGN_ID=$(grep -o -- '--sign [^ ]*' "$BUILD_LOG" | head -1 | awk '{print $2}')
@@ -42,7 +42,7 @@ fi
 if grep -q "BUILD SUCCEEDED" "$BUILD_LOG"; then
     echo ""
     echo "✅ Build successful!"
-    echo "📦 App location: ./build/Build/Products/Debug/Seedling.app"
+    echo "📦 App location: ./build/Build/Products/Debug/Talkie.app"
 elif grep -q "BUILD FAILED" "$BUILD_LOG"; then
     echo ""
     echo "❌ BUILD FAILED"

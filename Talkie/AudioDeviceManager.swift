@@ -1,6 +1,6 @@
 //
 //  AudioDeviceManager.swift
-//  Seedling
+//  Talkie
 //
 //  CoreAudio device enumeration for microphone selection
 //

@@ -1,6 +1,6 @@
 //
 //  AudioRecorder.swift
-//  Seedling
+//  Talkie
 //
 //  Audio capture service for real-time transcription
 //

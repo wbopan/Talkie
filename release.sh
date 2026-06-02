@@ -2,7 +2,7 @@
 
 set -e
 
-APP_NAME="Seedling"
+APP_NAME="Talkie"
 BUILD_DIR="./build"
 DEST="/Applications"
 

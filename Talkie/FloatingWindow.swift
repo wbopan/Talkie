@@ -1,6 +1,6 @@
 //
 //  FloatingWindow.swift
-//  Seedling
+//  Talkie
 //
 //  Floating transcription window with auto-start recording
 //

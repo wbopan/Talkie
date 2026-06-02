@@ -1,6 +1,6 @@
 //
 //  AccessibilityTextCapture.swift
-//  Seedling
+//  Talkie
 //
 //  Captures text content from other applications using macOS Accessibility API
 //  with browser support via AppleScript + JavaScript

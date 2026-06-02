@@ -13,7 +13,7 @@
 ### Task 1: Update SettingsWindowController for sidebar layout
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift:14-43` (SettingsWindowController)
+- Modify: `Talkie/SettingsWindow.swift:14-43` (SettingsWindowController)
 
 **Step 1: Update window configuration**
 
@@ -66,7 +66,7 @@ feat: update settings window controller for sidebar layout
 ### Task 2: Add sidebar navigation enum and rewrite SettingsView
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift:45-129` (SettingsView)
+- Modify: `Talkie/SettingsWindow.swift:45-129` (SettingsView)
 
 **Step 1: Add SettingsPane enum above SettingsView**
 
@@ -155,7 +155,7 @@ feat: add sidebar navigation with NavigationSplitView
 ### Task 3: Update APISettingsTab to bind directly to AppSettings
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift:131-184` (APISettingsTab)
+- Modify: `Talkie/SettingsWindow.swift:131-184` (APISettingsTab)
 
 **Step 1: Rewrite APISettingsTab**
 
@@ -232,7 +232,7 @@ refactor: bind APISettingsTab directly to AppSettings
 ### Task 4: Update ContextSettingsTab to bind directly to AppSettings
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift:186-229` (ContextSettingsTab)
+- Modify: `Talkie/SettingsWindow.swift:186-229` (ContextSettingsTab)
 
 **Step 1: Rewrite ContextSettingsTab**
 
@@ -302,7 +302,7 @@ refactor: bind ContextSettingsTab directly to AppSettings
 ### Task 5: Update SettingsView onChange handler and update config on edit
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift` (SettingsView)
+- Modify: `Talkie/SettingsWindow.swift` (SettingsView)
 
 **Step 1: Add config update on settings change**
 
@@ -349,7 +349,7 @@ feat: complete settings sidebar redesign with auto-save
 ### Task 6: Update Preview
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift` (bottom Preview section)
+- Modify: `Talkie/SettingsWindow.swift` (bottom Preview section)
 
 **Step 1: Update the preview**
 

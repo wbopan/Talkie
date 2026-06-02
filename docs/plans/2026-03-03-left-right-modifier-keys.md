@@ -13,7 +13,7 @@
 ### Task 1: Extend `LongPressModifierKey` Enum
 
 **Files:**
-- Modify: `Seedling/Utilities.swift:592-629` (the `LongPressModifierKey` enum)
+- Modify: `Talkie/Utilities.swift:592-629` (the `LongPressModifierKey` enum)
 
 **Step 1: Add left/right cases and update computed properties**
 
@@ -125,7 +125,7 @@ feat: extend LongPressModifierKey with left/right variants
 ### Task 2: Update `ModifierKeyMonitor` to Use keyCode
 
 **Files:**
-- Modify: `Seedling/AppDelegate.swift:212-477` (the `ModifierKeyMonitor` class)
+- Modify: `Talkie/AppDelegate.swift:212-477` (the `ModifierKeyMonitor` class)
 
 **Step 1: Add `lastMatchedKeyCode` state and update `resetState`**
 
@@ -318,7 +318,7 @@ feat: use keyCode in ModifierKeyMonitor for left/right detection
 ### Task 3: Update Settings UI
 
 **Files:**
-- Modify: `Seedling/SettingsWindow.swift:404-493` (the `PushToTalkSection`)
+- Modify: `Talkie/SettingsWindow.swift:404-493` (the `PushToTalkSection`)
 
 **Step 1: Update Picker and auto-disable double-tap**
 

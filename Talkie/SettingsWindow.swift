@@ -1,6 +1,6 @@
 //
 //  SettingsWindow.swift
-//  Seedling
+//  Talkie
 //
 //  Settings panel with API configuration and hotkey recorder
 //
@@ -358,7 +358,7 @@ struct GeneralSettingsTab: View {
                 LaunchAtLogin.Toggle("Launch at login")
                 Toggle("Show menu bar icon", isOn: $settings.showMenuBarIcon)
                 if !settings.showMenuBarIcon {
-                    Text("Open Seedling from Applications or Spotlight to access settings.")
+                    Text("Open Talkie from Applications or Spotlight to access settings.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -565,7 +565,7 @@ struct PushToTalkSection: View {
 // MARK: - About Tab
 
 struct AboutTab: View {
-    private let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Seedling"
+    private let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Talkie"
     private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 
     var body: some View {

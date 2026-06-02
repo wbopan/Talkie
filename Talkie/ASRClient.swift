@@ -1,6 +1,6 @@
 //
 //  ASRClient.swift
-//  Seedling
+//  Talkie
 //
 //  WebSocket client for Seed ASR API with binary protocol
 //

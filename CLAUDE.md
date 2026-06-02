@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Seedling is a macOS application for real-time speech-to-text transcription using the Seed ASR API. It features a native SwiftUI interface and implements the Seed ASR binary WebSocket protocol for streaming audio transcription.
+Talkie is a macOS application for real-time speech-to-text transcription using the Seed ASR API. It features a native SwiftUI interface and implements the Seed ASR binary WebSocket protocol for streaming audio transcription.
 
 ## Build Commands
 
@@ -18,8 +18,8 @@ Seedling is a macOS application for real-time speech-to-text transcription using
 ## Project Structure
 
 ```
-Seedling/
-├── SeedlingApp.swift               # App entry point
+Talkie/
+├── TalkieApp.swift               # App entry point
 ├── AppDelegate.swift               # Menu bar app coordinator, global hotkey, push-to-talk
 ├── ContentView.swift               # Main settings/status UI
 ├── FloatingWindow.swift            # Capsule-shaped floating transcription panel (Liquid Glass)
@@ -37,7 +37,7 @@ Seedling/
 
 ## Xcode Project
 
-Uses folder-based file membership (no pbxproj references). Adding or deleting `.swift` files in `Seedling/` automatically includes/excludes them from the build.
+Uses folder-based file membership (no pbxproj references). Adding or deleting `.swift` files in `Talkie/` automatically includes/excludes them from the build.
 
 ## Logging System
 

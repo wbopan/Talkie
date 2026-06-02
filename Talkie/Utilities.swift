@@ -1,6 +1,6 @@
 //
 //  Utilities.swift
-//  Seedling
+//  Talkie
 //
 //  Core utilities, models, extensions, and constants
 //
@@ -89,7 +89,7 @@ struct ASRConfig: Sendable {
 
         return [
             "user": [
-                "uid": "seedling_user"
+                "uid": "talkie_user"
             ],
             "audio": [
                 "format": "pcm",
@@ -457,7 +457,7 @@ enum LogLevel {
 
 /// Logger extensions with categorized loggers for different subsystems
 extension Logger {
-    private static nonisolated let subsystem = Bundle.main.bundleIdentifier ?? "com.wenbopan.seedling"
+    private static nonisolated let subsystem = Bundle.main.bundleIdentifier ?? "com.wenbopan.talkie"
 
     /// Logger for audio recording and processing
     static nonisolated let audio = Logger(subsystem: subsystem, category: "Audio")
@@ -495,13 +495,13 @@ extension Logger {
 ///
 /// To view logs in Console.app:
 /// 1. Open Console.app
-/// 2. Filter by process: "Seedling"
-/// 3. Filter by subsystem: "com.wenbopan.seedling"
+/// 2. Filter by process: "Talkie"
+/// 3. Filter by subsystem: "com.wenbopan.talkie"
 ///
 /// To view logs in terminal:
 /// ```bash
-/// log stream --predicate 'subsystem == "com.wenbopan.seedling"'
-/// log stream --predicate 'subsystem == "com.wenbopan.seedling" AND category == "ASR"'
+/// log stream --predicate 'subsystem == "com.wenbopan.talkie"'
+/// log stream --predicate 'subsystem == "com.wenbopan.talkie" AND category == "ASR"'
 /// ```
 nonisolated func log(_ level: LogLevel, _ message: String, file: String = #file, line: Int = #line) {
     let filename = (file as NSString).lastPathComponent
@@ -583,36 +583,36 @@ extension NSEvent.ModifierFlags {
 // MARK: - UserDefaults Keys
 
 enum UserDefaultsKeys {
-    static let appKey = "Seedling.AppKey"
-    static let accessKey = "Seedling.AccessKey"
-    static let resourceID = "Seedling.ResourceID"
-    static let httpPort = "Seedling.HTTPPort"
-    static let globalHotkeyKeyCode = "Seedling.GlobalHotkeyKeyCode"
-    static let globalHotkeyModifiers = "Seedling.GlobalHotkeyModifiers"
-    static let rememberWindowPosition = "Seedling.RememberWindowPosition"
-    static let windowPositionMode = "Seedling.WindowPositionMode"
-    static let windowPositionX = "Seedling.WindowPositionX"
-    static let windowPositionY = "Seedling.WindowPositionY"
-    static let autoPasteAfterClose = "Seedling.AutoPasteAfterClose"
-    static let removeTrailingPunctuation = "Seedling.RemoveTrailingPunctuation"
+    static let appKey = "Talkie.AppKey"
+    static let accessKey = "Talkie.AccessKey"
+    static let resourceID = "Talkie.ResourceID"
+    static let httpPort = "Talkie.HTTPPort"
+    static let globalHotkeyKeyCode = "Talkie.GlobalHotkeyKeyCode"
+    static let globalHotkeyModifiers = "Talkie.GlobalHotkeyModifiers"
+    static let rememberWindowPosition = "Talkie.RememberWindowPosition"
+    static let windowPositionMode = "Talkie.WindowPositionMode"
+    static let windowPositionX = "Talkie.WindowPositionX"
+    static let windowPositionY = "Talkie.WindowPositionY"
+    static let autoPasteAfterClose = "Talkie.AutoPasteAfterClose"
+    static let removeTrailingPunctuation = "Talkie.RemoveTrailingPunctuation"
 
     // Long-press modifier key settings
-    static let longPressConfig = "Seedling.LongPressEnabled" // stores full LongPressConfig JSON
-    static let longPressModifierKey = "Seedling.LongPressModifierKey"
-    static let longPressMinDuration = "Seedling.LongPressMinDuration"
-    static let context = "Seedling.Context"
+    static let longPressConfig = "Talkie.LongPressEnabled" // stores full LongPressConfig JSON
+    static let longPressModifierKey = "Talkie.LongPressModifierKey"
+    static let longPressMinDuration = "Talkie.LongPressMinDuration"
+    static let context = "Talkie.Context"
 
     // Context capture settings
-    static let contextCaptureEnabled = "Seedling.ContextCaptureEnabled"
-    static let maxContextLength = "Seedling.MaxContextLength"
+    static let contextCaptureEnabled = "Talkie.ContextCaptureEnabled"
+    static let maxContextLength = "Talkie.MaxContextLength"
 
     // Microphone selection
-    static let selectedMicrophoneUID = "Seedling.SelectedMicrophoneUID"
+    static let selectedMicrophoneUID = "Talkie.SelectedMicrophoneUID"
 
     // Appearance
-    static let glassTintStyle = "Seedling.GlassTintStyle"
-    static let screenEdgeMargin = "Seedling.ScreenEdgeMargin"
-    static let showMenuBarIcon = "Seedling.ShowMenuBarIcon"
+    static let glassTintStyle = "Talkie.GlassTintStyle"
+    static let screenEdgeMargin = "Talkie.ScreenEdgeMargin"
+    static let showMenuBarIcon = "Talkie.ShowMenuBarIcon"
 
     static let defaultPort = 18888
     static let defaultMaxContextLength = 2000
@@ -948,7 +948,7 @@ class AppSettings: ObservableObject {
     /// Migrate legacy Carbon hotkey settings to KeyboardShortcuts
     static func migrateHotkeyIfNeeded() {
         let defaults = UserDefaults.standard
-        let migrationKey = "Seedling.HotkeyMigrationCompleted"
+        let migrationKey = "Talkie.HotkeyMigrationCompleted"
 
         guard !defaults.bool(forKey: migrationKey) else { return }
 

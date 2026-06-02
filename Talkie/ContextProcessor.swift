@@ -1,6 +1,6 @@
 //
 //  ContextProcessor.swift
-//  Seedling
+//  Talkie
 //
 //  Processes captured context text for ASR - cleans and truncates from the end
 //
@@ -117,7 +117,7 @@ actor ContextProcessor {
 
     private func createDebugSessionDir(timestamp: String) -> URL? {
         let baseDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("Seedling", isDirectory: true)
+            .appendingPathComponent("Talkie", isDirectory: true)
             .appendingPathComponent("context_\(timestamp)", isDirectory: true)
 
         do {

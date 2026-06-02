@@ -1,6 +1,6 @@
 //
 //  KeyboardShortcutNames.swift
-//  Seedling
+//  Talkie
 //
 //  Defines global keyboard shortcut names using KeyboardShortcuts library
 //

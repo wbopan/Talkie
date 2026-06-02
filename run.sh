@@ -2,11 +2,11 @@
 
 set -e
 
-echo "🚀 Running Seedling with logs..."
+echo "🚀 Running Talkie with logs..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-APP_PATH="./build/Build/Products/Debug/Seedling.app"
+APP_PATH="./build/Build/Products/Debug/Talkie.app"
 
 # 运行应用并显示日志
-"$APP_PATH/Contents/MacOS/Seedling" 2>&1
+"$APP_PATH/Contents/MacOS/Talkie" 2>&1
