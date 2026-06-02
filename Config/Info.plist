@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/wbopan/Talkie/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>+x84IeR7jdqllGImAnebnEqfLXPqKxFkYK4D4gi7+qo=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+</dict>
+</plist>

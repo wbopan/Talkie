@@ -18,7 +18,7 @@ Implements [docs/superpowers/specs/2026-06-02-talkie-distribution-design.md](../
 
 ## File structure
 
-- `Talkie/Info.plist` — **Create.** Holds the three Sparkle keys (`SUFeedURL`, `SUPublicEDKey`, `SUEnableAutomaticChecks`); merged with Xcode's generated plist.
+- `Config/Info.plist` — **Create.** Holds the three Sparkle keys (`SUFeedURL`, `SUPublicEDKey`, `SUEnableAutomaticChecks`); merged with Xcode's generated plist. Kept *outside* the synchronized `Talkie/` folder so folder-based membership doesn't wrongly copy it as a bundle resource.
 - `Talkie/AppDelegate.swift` — **Modify.** Add Sparkle import, an `SPUStandardUpdaterController`, and a "Check for Updates…" menu item.
 - `Talkie.xcodeproj/project.pbxproj` — **Modify.** Add the Sparkle SPM dependency; set `INFOPLIST_FILE`.
 - `ExportOptions.plist` — **Create.** Developer ID export config for `xcodebuild -exportArchive`.
