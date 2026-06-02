@@ -180,9 +180,6 @@ class FloatingWindowController: NSWindowController {
             log(.debug, "Captured previous active app: \(app.localizedName ?? "Unknown")")
         }
 
-        // [Sync] Capture raw context BEFORE showing our window
-        let rawContext = performSynchronousCapture()
-
         guard let window = window else {
             log(.error, "Window is nil in showWindow")
             return
@@ -215,54 +212,51 @@ class FloatingWindowController: NSWindowController {
 
         log(.info, "Window shown - frame: \(window.frame), isVisible: \(window.isVisible)")
 
-        // [Async Serial] Process context -> Set context -> Start recording
-        // This ensures recording starts AFTER context is ready
-        Task { @MainActor in
-            logger.debug("Task started - about to process context")
-
-            // Step 1: Process and set context (or clear if not captured)
-            if let raw = rawContext {
-                logger.debug("Processing context from \(raw.applicationName): \(raw.text.count) chars")
-                let processed = await ContextProcessor.shared.process(
-                    text: raw.text,
-                    maxLength: settings.maxContextLength
-                )
-
-                let processedContext = CapturedTextContext(
-                    text: processed.text,
-                    documentPath: raw.documentPath,
-                    applicationName: raw.applicationName,
-                    bundleIdentifier: raw.bundleIdentifier,
-                    capturedAt: raw.capturedAt
-                )
-
-                logger.debug("About to call setCapturedContext")
-                viewModel.setCapturedContext(processedContext)
-                logger.info("Context set, processed: \(processed.originalLength) -> \(processed.text.count) chars")
-            } else {
-                // Clear previous context to avoid using stale data
-                logger.debug("No rawContext, clearing previous context")
-                viewModel.setCapturedContext(nil)
-            }
-
-            // Step 2: Start recording (context is now ready/cleared)
-            // Guard: only start if window is still visible (user may have released push-to-talk
-            // during async context processing, which would hide the window before we get here)
-            guard self.window?.isVisible == true else {
-                logger.info("Window no longer visible, skipping startRecording")
-                return
-            }
-            logger.debug("About to call startRecording")
-            if !viewModel.isRecording {
-                viewModel.startRecording()
-            }
-            logger.debug("Task completed")
+        // Start recording immediately so audio capture and the waveform come alive at
+        // once. Context capture is injected into startRecording (it runs after audio
+        // has started, before the ASR connect) so a slow or blocked capture can never
+        // leave the window open with no recording — while still feeding the ASR config.
+        if !viewModel.isRecording {
+            viewModel.startRecording(prepareContext: { [weak self] in
+                await self?.captureAndApplyContext()
+            })
         }
 
         // Notify SwiftUI view to adjust window size (fixes size issue after empty-text close)
         NotificationCenter.default.post(name: .floatingWindowDidShow, object: nil)
 
         log(.info, "Floating window shown")
+    }
+
+    /// Capture and process auto-context from the previously-active app, then apply it to
+    /// the view model. Invoked by `startRecording` AFTER audio capture has begun, so the
+    /// capture (which may run synchronous AppleScript/AX against another app) can no
+    /// longer block recording from starting. Capture logic itself is unchanged.
+    @MainActor
+    private func captureAndApplyContext() async {
+        let rawContext = performSynchronousCapture()
+        if let raw = rawContext {
+            logger.debug("Processing context from \(raw.applicationName): \(raw.text.count) chars")
+            let processed = await ContextProcessor.shared.process(
+                text: raw.text,
+                maxLength: settings.maxContextLength
+            )
+
+            let processedContext = CapturedTextContext(
+                text: processed.text,
+                documentPath: raw.documentPath,
+                applicationName: raw.applicationName,
+                bundleIdentifier: raw.bundleIdentifier,
+                capturedAt: raw.capturedAt
+            )
+
+            viewModel.setCapturedContext(processedContext)
+            logger.info("Context set, processed: \(processed.originalLength) -> \(processed.text.count) chars")
+        } else {
+            // Clear previous context to avoid using stale data
+            logger.debug("No rawContext, clearing previous context")
+            viewModel.setCapturedContext(nil)
+        }
     }
 
     func hideWindow() {

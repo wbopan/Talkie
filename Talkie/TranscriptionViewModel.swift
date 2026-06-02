@@ -152,7 +152,12 @@ class TranscriptionViewModel: ObservableObject {
     }
 
     /// Start recording and transcription
-    func startRecording() {
+    ///
+    /// - Parameter prepareContext: Optional async hook invoked AFTER audio capture has
+    ///   started but BEFORE connecting to the ASR service. Auto-context capture is run
+    ///   here so a slow or blocked capture can never prevent recording from starting,
+    ///   while the captured context is still included in the ASR session config.
+    func startRecording(prepareContext: (@MainActor () async -> Void)? = nil) {
         log(.info, "startRecording() called, current state: \(recordingState)")
 
         // Log the current config's context for debugging
@@ -201,8 +206,10 @@ class TranscriptionViewModel: ObservableObject {
                 // Check for cancellation before starting
                 try Task.checkCancellation()
 
-                // Ensure we have a valid config
-                guard let config = currentConfig else {
+                // Ensure we have valid credentials before doing anything heavy.
+                // The config is re-read right before connecting, after prepareContext
+                // has had a chance to add auto-captured context.
+                guard currentConfig != nil else {
                     errorMessage = "API credentials not configured. Open Settings to add them."
                     await performCleanup()
                     recordingState = .idle
@@ -242,10 +249,25 @@ class TranscriptionViewModel: ObservableObject {
                 audioActuallyStarted = true
                 statusMessage = "Connecting..."
 
+                // Capture auto-context now. Audio is already recording and buffering
+                // (so the waveform is live and a slow capture can't block recording),
+                // but we run it before connecting so the context is part of the config.
+                if let prepareContext {
+                    await prepareContext()
+                    try Task.checkCancellation()
+                }
+
                 // Check for cancellation before connecting
                 try Task.checkCancellation()
 
-                // Connect to ASR service
+                // Connect to ASR service. Re-read the config so any context just added
+                // by prepareContext is included in the session.
+                guard let config = currentConfig else {
+                    errorMessage = "API credentials not configured. Open Settings to add them."
+                    await performCleanup()
+                    recordingState = .idle
+                    return
+                }
                 try await asrClient.connect(config: config)
                 statusMessage = "Connected"
 
