@@ -3,6 +3,14 @@
 	<channel>
 		<title>Talkie</title>
 		<!-- BEGIN ITEMS -->
+		<item>
+			<title>1.3.2</title>
+			<pubDate>Tue, 02 Jun 2026 05:46:51 +0000</pubDate>
+			<sparkle:version>2</sparkle:version>
+			<sparkle:shortVersionString>1.3.2</sparkle:shortVersionString>
+			<sparkle:minimumSystemVersion>26.1</sparkle:minimumSystemVersion>
+			<enclosure url="https://github.com/wbopan/Talkie/releases/download/v1.3.2/Talkie-1.3.2.dmg" type="application/octet-stream" sparkle:edSignature="PeFP7OINYFMeji1xxncAJIEfYQOlN1DOo2q0SaHAzzVWPcI4U+iAUO55BHB6uEyTvmGjcaZNQWQ/7wU4Dgm0Ag==" length="3375467" />
+		</item>
 		<!-- END ITEMS -->
 	</channel>
 </rss>
