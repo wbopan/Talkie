@@ -10,6 +10,7 @@ import SwiftUI
 import Carbon
 import OSLog
 import KeyboardShortcuts
+import Sparkle
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Properties
@@ -20,6 +21,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var modifierKeyMonitor: ModifierKeyMonitor?
     private let viewModel = TranscriptionViewModel.shared
     private let settings = AppSettings.shared
+
+    /// Sparkle updater. `startingUpdater: true` begins automatic background checks per Info.plist.
+    private let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
     // MARK: - Application Lifecycle
 
@@ -102,6 +106,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         openItem.image = NSImage(systemSymbolName: "mic", accessibilityDescription: nil)
         menu.addItem(openItem)
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+
+        let updateItem = NSMenuItem(title: "Check for Updates...", action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
+        updateItem.target = updaterController
+        updateItem.image = NSImage(systemSymbolName: "arrow.down.circle", accessibilityDescription: nil)
+        menu.addItem(updateItem)
+
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
         quitItem.image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil)
         menu.addItem(quitItem)
