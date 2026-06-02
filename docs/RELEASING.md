@@ -7,8 +7,8 @@ as a GitHub Release, with in-app auto-updates via [Sparkle](https://sparkle-proj
 
 ### 1. Developer ID Application certificate
 
-Xcode → Settings → Accounts → select team `PH43TLJ5WH` → Manage Certificates → "+" →
-**Developer ID Application**. Verify:
+Xcode → Settings → Accounts → select team `HJDT6NYKJC` (Wenbo Pan) → Manage
+Certificates → "+" → **Developer ID Application**. Verify:
 
 ```bash
 security find-identity -v -p codesigning | grep "Developer ID Application"

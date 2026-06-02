@@ -7,7 +7,7 @@ set -euo pipefail
 APP_NAME="Talkie"
 SCHEME="Talkie"
 BUNDLE_ID="com.wenbopan.Talkie"
-TEAM_ID="PH43TLJ5WH"
+TEAM_ID="HJDT6NYKJC"
 REPO="wbopan/Talkie"
 NOTARY_PROFILE="talkie-notary"
 DERIVED="./build"
@@ -41,6 +41,8 @@ rm -rf "${DIST}"; mkdir -p "${DIST}"
 xcodebuild -project Talkie.xcodeproj -scheme "${SCHEME}" -configuration Release \
   -derivedDataPath "${DERIVED}" \
   -archivePath "${DIST}/${APP_NAME}.xcarchive" \
+  -allowProvisioningUpdates \
+  DEVELOPMENT_TEAM="${TEAM_ID}" \
   ENABLE_HARDENED_RUNTIME=YES \
   ENABLE_USER_SCRIPT_SANDBOXING=NO \
   archive
