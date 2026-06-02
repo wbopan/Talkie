@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A23FDF80BA844D08A20FC750 /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 6D74A57A0294441FB3276435 /* LaunchAtLogin */; };
 		B8E4F2A1C3D54E6789012345 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = C9F5E3B2D4A65F7890123456 /* KeyboardShortcuts */; };
+		C1D2E3F405162738495A6B7C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = C2D3E4F506172839405B6C7D /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 			files = (
 				A23FDF80BA844D08A20FC750 /* LaunchAtLogin in Frameworks */,
 				B8E4F2A1C3D54E6789012345 /* KeyboardShortcuts in Frameworks */,
+				C1D2E3F405162738495A6B7C /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				6D74A57A0294441FB3276435 /* LaunchAtLogin */,
 				C9F5E3B2D4A65F7890123456 /* KeyboardShortcuts */,
+				C2D3E4F506172839405B6C7D /* Sparkle */,
 			);
 			productName = Talkie;
 			productReference = 5A846FF62F21B8B900CBA392 /* Talkie.app */;
@@ -108,6 +111,7 @@
 			packageReferences = (
 				A1457309DDD249148CD4A6D3 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Modern" */,
 				D7A6F4C3E5B76G8901234567 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				C3D4E5F607182940516C7D8E /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -388,6 +392,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		C3D4E5F607182940516C7D8E /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -400,6 +412,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D7A6F4C3E5B76G8901234567 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
 			productName = KeyboardShortcuts;
+		};
+		C2D3E4F506172839405B6C7D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3D4E5F607182940516C7D8E /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

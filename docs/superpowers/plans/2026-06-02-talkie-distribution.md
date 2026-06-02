@@ -390,7 +390,8 @@ command -v gh >/dev/null || { echo "Missing gh (brew install gh)"; exit 1; }
 security find-identity -v -p codesigning | grep -q "Developer ID Application" \
   || { echo "No Developer ID Application certificate in keychain (see docs/RELEASING.md)"; exit 1; }
 
-SIGN_UPDATE="$(fd sign_update "${DERIVED}/SourcePackages/artifacts" 2>/dev/null | head -1 || true)"
+# Pick the EdDSA sign_update (exclude the legacy old_dsa_scripts copy).
+SIGN_UPDATE="$(fd sign_update "${DERIVED}/SourcePackages/artifacts" 2>/dev/null | rg -v old_dsa | head -1 || true)"
 
 # --- 1. Bump versions in pbxproj ---
 PBX="Talkie.xcodeproj/project.pbxproj"
