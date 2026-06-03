@@ -115,3 +115,7 @@ worktrees/
 
 # Claude
 .claude/
+
+# Distribution build output
+dist/
+dist-local/

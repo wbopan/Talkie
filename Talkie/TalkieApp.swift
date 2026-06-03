@@ -15,5 +15,16 @@ struct TalkieApp: App {
         Settings {
             EmptyView()
         }
+        .commands {
+            // Replace the default "Settings…" command so Cmd+, opens our custom settings
+            // window (via AppDelegate) instead of the empty SwiftUI Settings scene, which
+            // otherwise pops a blank window.
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    NotificationCenter.default.post(name: .openSettings, object: nil)
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
 }

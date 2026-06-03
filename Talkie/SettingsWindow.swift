@@ -130,6 +130,49 @@ struct SettingsView: View {
     }
 }
 
+// MARK: - Reusable Section Header + Info Popover
+
+/// A small "ⓘ" button that reveals help text in a popover, keeping section
+/// descriptions out of the way until the user asks for them.
+struct InfoButton: View {
+    let text: String
+    @State private var isPresented = false
+
+    var body: some View {
+        Button {
+            isPresented.toggle()
+        } label: {
+            Image(systemName: "info.circle")
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .help("More info")
+        .popover(isPresented: $isPresented, arrowEdge: .bottom) {
+            Text(text)
+                .font(.callout)
+                .frame(width: 280, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(12)
+        }
+    }
+}
+
+/// Section header with an optional info popover button beside the title.
+struct SettingsSectionHeader: View {
+    let title: String
+    var info: String? = nil
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(title)
+                .font(.headline)
+            if let info {
+                InfoButton(text: info)
+            }
+        }
+    }
+}
+
 // MARK: - API Settings Tab
 
 struct APISettingsTab: View {
@@ -143,40 +186,29 @@ struct APISettingsTab: View {
 
                 SecureField("Access Key:", text: $settings.accessKey)
                     .textFieldStyle(.roundedBorder)
-            } header: {
-                Text("Seed ASR Credentials")
-                    .font(.headline)
-            }
 
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("How to get credentials:")
-                        .fontWeight(.medium)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("1. Open the Volcengine Speech Console")
-                        Text("2. Select \"旧版控制台\" (Legacy Console) in the upper left")
-                        Text("3. Navigate to \"语音识别大模型\" → \"流式语音识别大模型\"")
-                        Text("4. Copy your App ID and Access Token")
+                Button {
+                    if let url = URL(string: "https://console.volcengine.com/speech/app") {
+                        NSWorkspace.shared.open(url)
                     }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                    Button {
-                        if let url = URL(string: "https://console.volcengine.com/speech/app") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "arrow.up.right.square")
-                            Text("Open Volcengine Console")
-                        }
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.up.right.square")
+                        Text("Open Volcengine Console")
                     }
-                    .buttonStyle(.link)
                 }
+                .buttonStyle(.link)
             } header: {
-                Text("Setup Guide")
-                    .font(.headline)
+                SettingsSectionHeader(
+                    title: "Seed ASR Credentials",
+                    info: """
+                    How to get credentials:
+                    1. Open the Volcengine Speech Console
+                    2. Select "旧版控制台" (Legacy Console) in the upper left
+                    3. Navigate to "语音识别大模型" → "流式语音识别大模型"
+                    4. Copy your App ID and Access Token
+                    """
+                )
             }
         }
         .formStyle(.grouped)
@@ -192,10 +224,6 @@ struct ContextSettingsTab: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Provide persistent context that always applies. This has priority over auto-captured content.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
                     TextEditor(text: $settings.context)
                         .font(.system(.body))
                         .frame(height: 100)
@@ -216,8 +244,10 @@ struct ContextSettingsTab: View {
                     }
                 }
             } header: {
-                Text("User Context")
-                    .font(.headline)
+                SettingsSectionHeader(
+                    title: "User Context",
+                    info: "Provide persistent context that always applies. This has priority over auto-captured content."
+                )
             }
 
             ContextCaptureSection(settings: settings)
@@ -323,12 +353,10 @@ struct ContextCaptureSection: View {
                 }
             }
         } header: {
-            Text("Auto Context Capture")
-                .font(.headline)
-        } footer: {
-            Text("When enabled, text from the previous application is captured on each activation and appended after your user context (up to the max length limit).")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            SettingsSectionHeader(
+                title: "Auto Context Capture",
+                info: "When enabled, text from the previous application is captured on each activation and appended after your user context (up to the max length limit)."
+            )
         }
         .onAppear {
             updateAccessibilityStatus()
@@ -438,10 +466,6 @@ struct ControlsSettingsTab: View {
             } header: {
                 Text("Global Shortcut")
                     .font(.headline)
-            } footer: {
-                Text("Show or hide the transcription window")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
 
             PushToTalkSection(settings: settings)
@@ -450,12 +474,10 @@ struct ControlsSettingsTab: View {
                 Toggle("Auto-paste after finish", isOn: $settings.autoPasteAfterClose)
                 Toggle("Remove trailing punctuation", isOn: $settings.removeTrailingPunctuation)
             } header: {
-                Text("Behavior")
-                    .font(.headline)
-            } footer: {
-                Text("Automatically paste transcribed text into the previous application when using the finish action. Remove trailing punctuation removes both full-width and half-width punctuation marks from the end of the transcribed text.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                SettingsSectionHeader(
+                    title: "Behavior",
+                    info: "Auto-paste inserts the transcribed text into the previous application when you use the finish action. Remove trailing punctuation strips both full-width and half-width punctuation from the end of the text."
+                )
             }
         }
         .formStyle(.grouped)
@@ -526,12 +548,10 @@ struct PushToTalkSection: View {
                 Toggle("Require double-tap", isOn: configBinding(\.requireDoubleTap))
             }
         } header: {
-            Text("Push to Talk")
-                .font(.headline)
-        } footer: {
-            Text("Hold a modifier key to start dictation. Release to finish and auto-paste. When double-tap is required, tap the key once first, then hold. Requires Accessibility permission.")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            SettingsSectionHeader(
+                title: "Push to Talk",
+                info: "Hold a modifier key to start dictation. Release to finish and auto-paste. When double-tap is required, tap the key once first, then hold. Requires Accessibility permission."
+            )
         }
         .onAppear {
             updateAccessibilityStatus()
@@ -565,6 +585,7 @@ struct PushToTalkSection: View {
 // MARK: - About Tab
 
 struct AboutTab: View {
+    @ObservedObject private var updater = UpdaterManager.shared
     private let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Talkie"
     private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 
@@ -591,6 +612,14 @@ struct AboutTab: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+
+            Button {
+                updater.checkForUpdates()
+            } label: {
+                Label("Check for Updates…", systemImage: "arrow.down.circle")
+            }
+            .controlSize(.large)
+            .disabled(!updater.canCheckForUpdates)
 
             Spacer()
         }

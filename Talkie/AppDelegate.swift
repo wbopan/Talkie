@@ -22,8 +22,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let viewModel = TranscriptionViewModel.shared
     private let settings = AppSettings.shared
 
-    /// Sparkle updater. `startingUpdater: true` begins automatic background checks per Info.plist.
-    private let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    /// Shared Sparkle updater (also used by the About settings tab).
+    private let updaterController = UpdaterManager.shared.controller
 
     // MARK: - Application Lifecycle
 
@@ -66,12 +66,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
 
-        // Override the system Settings/Preferences menu item (Cmd+,)
-        DispatchQueue.main.async { [weak self] in
-            self?.overrideSettingsMenuItem()
+        // Open our settings window when the Settings command (Cmd+,) is invoked.
+        // The command itself is provided by TalkieApp via CommandGroup(replacing: .appSettings),
+        // which prevents the empty SwiftUI Settings scene from opening a blank window.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(openSettings),
+            name: .openSettings,
+            object: nil
+        )
 
-            // If menu bar icon is hidden, open settings so the user has a way to interact
-            if self?.settings.showMenuBarIcon == false {
+        // If menu bar icon is hidden, open settings so the user has a way to interact
+        if !settings.showMenuBarIcon {
+            DispatchQueue.main.async { [weak self] in
                 self?.openSettings()
             }
         }
@@ -117,21 +124,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(quitItem)
 
         statusItem.menu = menu
-    }
-
-    /// Replace the SwiftUI-generated Settings menu item with our own that opens our custom settings window.
-    private func overrideSettingsMenuItem() {
-        guard let appMenu = NSApp.mainMenu?.item(at: 0)?.submenu else { return }
-        for (index, item) in appMenu.items.enumerated() {
-            if item.keyEquivalent == "," {
-                let newItem = NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ",")
-                newItem.keyEquivalentModifierMask = .command
-                newItem.target = self
-                appMenu.removeItem(at: index)
-                appMenu.insertItem(newItem, at: index)
-                break
-            }
-        }
     }
 
     // MARK: - Global Hotkey Setup
@@ -770,4 +762,6 @@ extension Notification.Name {
     static let globalHotkeyChanged = Notification.Name("globalHotkeyChanged")
     static let longPressConfigChanged = Notification.Name("longPressConfigChanged")
     static let menuBarIconVisibilityChanged = Notification.Name("menuBarIconVisibilityChanged")
+    /// Posted when the Settings command (Cmd+,) is invoked; AppDelegate opens the custom settings window.
+    static let openSettings = Notification.Name("openSettings")
 }
